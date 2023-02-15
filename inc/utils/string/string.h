@@ -6,7 +6,7 @@
 /*   By: yboudoui <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/24 21:05:07 by yboudoui          #+#    #+#             */
-/*   Updated: 2023/01/13 08:09:31 by yboudoui         ###   ########.fr       */
+/*   Updated: 2023/02/15 16:59:20 by kdhrif           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # include <stdarg.h>
 # include <stddef.h>
 # include <stdbool.h>
+# include <unistd.h>
 
 typedef bool	(*t_fp_is_charset)(int);
 bool	is_space(int c);
@@ -44,4 +45,16 @@ char	**list_to_str_array(t_list lst, bool (*cast_content)(void *, char **));
 void	string_array_destroy(void *data);
 
 char	**ft_split(char	const *str, char c);
+
+// ft_putchar_fd.c
+size_t	ft_putchar_fd(char c, int fd);
+
+// ft_putstr_fd.c
+size_t	ft_putstr_fd(char *s, int fd);
+
+
+
+
+
+
 #endif
