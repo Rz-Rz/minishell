@@ -6,7 +6,7 @@
 /*   By: kdhrif <kdhrif@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/15 16:38:49 by kdhrif            #+#    #+#             */
-/*   Updated: 2023/02/15 17:03:35 by kdhrif           ###   ########.fr       */
+/*   Updated: 2023/02/16 13:50:22 by kdhrif           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,6 @@ int		ft_echo(char **av)
 		i++;
 	}
 	if (!n)
-		ft_putchar('\n');
+		ft_putchar_fd('\n', STDOUT);
 	return (0);
 }

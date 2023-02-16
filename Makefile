@@ -6,7 +6,7 @@
 #    By: yboudoui <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/06/19 14:53:15 by yboudoui          #+#    #+#              #
-#    Updated: 2023/01/13 08:06:29 by yboudoui         ###   ########.fr        #
+#    Updated: 2023/02/15 18:39:18 by kdhrif           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -111,5 +111,4 @@ valgrind:	fclean
 			./$(NAME)														\
 
 #			--gen-suppressions=yes											\
-
-.PHONY:		all clean fclean re bonus
+PHONY:		all clean fclean re bonus
