@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: yboudoui <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/01/11 11:16:15 by yboudoui          #+#    #+#             */
-/*   Updated: 2023/01/13 08:15:18 by yboudoui         ###   ########.fr       */
+/*   Created: 2023/02/27 15:15:01 by yboudoui          #+#    #+#             */
+/*   Updated: 2023/03/11 12:46:16 by yboudoui         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,8 @@
 typedef struct s_commande	*t_commande;
 
 struct s_commande {
-	t_list			argv;
-	t_list			redir_in;
-	t_list			redir_out;
-	t_list			redir_out_append;
-	t_list			here_document;
+	t_list	argv;
+	t_list	redir;
 };
 
 t_commande	commande_create(t_list lst);

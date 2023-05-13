@@ -6,72 +6,95 @@
 /*   By: yboudoui <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/16 07:04:37 by yboudoui          #+#    #+#             */
-/*   Updated: 2023/01/13 08:36:34 by yboudoui         ###   ########.fr       */
+/*   Updated: 2023/03/22 16:12:34 by kdhrif           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <readline/readline.h>
-#include <readline/history.h>
-#include "prompt.h"
+#include "../inc/minishell.h"
+#include <unistd.h>
 
-#include "show.h"
+t_global	g_global;
 
-// juste for test
-#include "expander.h"
-
-void	expand_all_command(t_list env, t_list cmd)
+void	signal_control_c_(int sig)
 {
-	while (cmd)
-	{
-		commande_expand_variable(env, cmd->content);
-		cmd = cmd->next;
-	}
+	if (sig != SIGINT)
+		return ;
+	write(STDIN_FILENO, "\n", 1);
+	g_global.exit_code = 130;
+	rl_on_new_line();
+	rl_replace_line("", 0);
+	rl_redisplay();
 }
 
-void	exe(t_list env, t_prompt prompt)
+static int	execution(t_prompt prompt)
 {
-	(void)env;
-	if (prompt == NULL)
-		return ;
-	if (prompt->commande == NULL)
-		return ;
-	ft_lstiter(prompt->commande, print_commande_line);
-	expand_all_command(env, prompt->commande);
-	ft_lstiter(prompt->commande, print_commande_line);
+	t_cmd_list	cmd;
+
+	if (g_global.prompt == NULL)
+		return (EXIT_FAILURE);
+	if (heredoc(prompt))
+		return (EXIT_SUCCESS);
+	list_iter(prompt, commande_expand_variable, NULL);
+	cmd = convertion(prompt);
+	g_global.cmds = cmd;
+	pipex(cmd);
+	cmd_list_destroy(&g_global.cmds);
+	return (EXIT_SUCCESS);
 }
 
-int	execution(char *env[], void (*exec)(t_list, t_prompt))
+static int	read_prompt(void)
 {
-	t_list		env_list;
-	char		*line;
-	t_prompt	prompt;
+	char					*line;
+	const struct sigaction	signals[2] = {
+	{.sa_handler = signal_control_c_},
+	{.sa_handler = SIG_IGN}
+	};
 
-	env_list = environment_list_create(env);
-	while (1)
+	incr_shlvl();
+	while (42)
 	{
-		rl_on_new_line();
-		line = readline("~$ ");
+		sigaction(SIGINT, &signals[0], &g_global.default_sigint);
+		sigaction(SIGQUIT, &signals[1], &g_global.default_sigquit);
+		line = readline("~$> ");
 		if (line == NULL)
-			break ;
+			return (printf("exit\n"), EXIT_FAILURE);
 		if (!is_empty(line))
+		{
 			add_history(line);
-		prompt = prompt_create(line);
-		exec(env_list, prompt);
-		prompt_destroy(prompt);
+			g_global.prompt = prompt_create(line);
+			execution(g_global.prompt);
+			prompt_destroy(&g_global.prompt);
+		}
 		free(line);
 	}
 	rl_clear_history();
-	environment_list_destroy(env_list);
+	return (EXIT_SUCCESS);
+}
+
+int	loop_tester(char *line)
+{
+	g_global.prompt = prompt_create(line);
+	execution(g_global.prompt);
+	prompt_destroy(&g_global.prompt);
 	return (0);
 }
 
-int	main(int ac, char *av[], char *env[])
+int	main(int ac, char *av[], char *envp[])
 {
-	(void)ac;
 	(void)av;
-	return (execution(env, exe));
+	g_global = (t_global){0};
+	if (ac != 1 || isatty(STDIN_FILENO) == 0)
+		return (EXIT_FAILURE);
+	if (!env_list_create(envp))
+		return (-1);
+	if (ac >= 2)
+	{
+		if (av[1][0] == '-' && av[1][1] == 'c' && av[2])
+			loop_tester(av[2]);
+		else
+			generic_err(av[1], "No such file or directory\n", 2);
+		return (g_global.exit_code);
+	}
+	read_prompt();
+	return (meta_exit(g_global.exit_code, NULL), EXIT_SUCCESS);
 }
-
-/*
-ls $HOME | cat main.c >> $USER < $LANG<$LOGNAME|             ls $SHELL -la > here|grep $LESS
-*/

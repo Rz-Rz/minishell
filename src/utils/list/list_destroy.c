@@ -6,7 +6,7 @@
 /*   By: yboudoui <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/03 14:41:13 by yboudoui          #+#    #+#             */
-/*   Updated: 2023/01/05 18:29:55 by yboudoui         ###   ########.fr       */
+/*   Updated: 2023/03/20 15:10:29 by yboudoui         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,36 +14,37 @@
 
 void	list_destroy(t_list lst, t_fp_destroy_content del)
 {
-	if (!lst || !del)
+	if (!lst)
 		return ;
-	del(lst->content);
+	if (del)
+		del(lst->content);
 	free(lst);
 }
 
-void	list_remove_one(t_list *root, t_fp_destroy_content del)
+void	list_remove_one(void *lst, t_fp_destroy_content del)
 {
-	t_list	current;
-	t_list	next;
+	t_list	*current;
+	t_list	new;
 
-	current = (*root);
-	if (!root || !current || !del)
+	current = lst;
+	if (current == NULL || (*current) == NULL)
 		return ;
-	next = (*root)->next;
-	if (current->next)
-		current->next->prev = current->prev;
-	if (current->prev)
-		current->prev->next = current->next;
-	(*root) = next;
-	list_destroy(current, del);
+	new = (*current)->next;
+	if ((*current)->next)
+		(*current)->next->prev = (*current)->prev;
+	if ((*current)->prev)
+		(*current)->prev->next = (*current)->next;
+	list_destroy(*current, del);
+	(*current) = new;
 }
 
-void	list_clear(t_list *lst, t_fp_destroy_content del)
+void	list_clear(void *root, t_fp_destroy_content del)
 {
 	t_list	tmp;
+	t_list	*lst;
 
-	if (!lst || !del)
-		return ;
-	while (*lst)
+	lst = root;
+	while (lst && *lst)
 	{
 		tmp = (*lst)->next;
 		list_destroy(*lst, del);

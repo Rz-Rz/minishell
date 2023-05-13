@@ -6,42 +6,69 @@
 /*   By: yboudoui <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/11 09:14:15 by yboudoui          #+#    #+#             */
-/*   Updated: 2023/01/13 08:20:39 by yboudoui         ###   ########.fr       */
+/*   Updated: 2023/03/21 17:24:58 by yboudoui         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "prompt.h"
 
-#include "show.h"
-
-void	prompt_destroy(void *data)
+static t_list	slice_commande(t_token_list *lst)
 {
-	t_prompt	input;
+	t_list	output;
 
-	input = data;
-	if (input == NULL)
-		return ;
-	list_clear(&input->heredoc, token_destroy);
-	list_clear(&input->commande, commande_destroy);
-	free(input);
+	output = NULL;
+	while (*lst)
+	{
+		if ((*lst)->token->type == TOKEN_PIPE)
+			break ;
+		else
+			list_create_back((t_list *)&output, token_dup((*lst)->token));
+		(*lst) = (*lst)->next;
+	}
+	return (output);
+}
+
+static bool	syntaxer(t_token_list *root)
+{
+	t_token_list	lst;
+	t_token_list	output;
+
+	output = NULL;
+	lst = (*root);
+	while (lst)
+	{
+		if (lst->token->type == TOKEN_PIPE)
+			lst = lst->next;
+		else
+			list_create_back((t_list *)&output,
+				commande_create(slice_commande(&lst)));
+	}
+	list_clear(root, token_destroy);
+	(*root) = output;
+	return (true);
 }
 
 t_prompt	prompt_create(char *input)
 {
-	char		*error;
-	t_list		lexer_output;
-	t_prompt	out;
+	t_token_list	lexer_output;
 
 	if (input == NULL)
 		return (NULL);
-	out = ft_calloc(1, sizeof(struct s_prompt));
-	if (out == NULL)
+	lexer_output = lexer(input);
+	if (lexer_output == NULL)
 		return (NULL);
-	lexer_output = NULL;
-	error = lexer(input, &lexer_output);
-	if (error)
-		return (print_error(error), NULL);
 	syntaxer(&lexer_output);
-	out->commande = lexer_output;
-	return (out);
+	return ((t_prompt)lexer_output);
+}
+
+void	prompt_destroy(void *data)
+{
+	t_prompt	*input;
+
+	input = data;
+	if (input == NULL)
+		return ;
+	list_clear(input, commande_destroy);
+	free(*input);
+	(*input) = NULL;
 }

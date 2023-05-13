@@ -6,45 +6,82 @@
 /*   By: yboudoui <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/11 09:58:32 by yboudoui          #+#    #+#             */
-/*   Updated: 2023/01/11 15:55:24 by yboudoui         ###   ########.fr       */
+/*   Updated: 2023/03/21 17:24:15 by yboudoui         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "lexer.h"
+#include "token.h"
+#include "minishell.h"
 
-#include "show.h"
-
-bool	token_list_sanitizer(t_list *root)
+static void	*token_merge_operator(void *input)
 {
-	t_token	token;
-	t_list	output;
-	t_list	lst;
+	t_token			out;
+	t_token_list	*lst;
 
-	output = NULL;
-	lst = (*root);
-	while (lst)
+	lst = input;
+	if (lst == NULL || (*lst) == NULL)
+		return (NULL);
+	if ((*lst)->token->type & TOKEN_IO)
 	{
-		token = lst->content;
-		if (!token)
-			return (false);
-		if (token->type != TOKEN_SPACES)
-			list_create_back(&output, token_dup(token));
-		lst = lst->next;
+		out = token_create((*lst)->token->type, ft_strdup(""));
+		(*lst) = (*lst)->next;
+		skip_token_spaces(lst);
+		while ((*lst) && ((*lst)->token->type & TOKEN_MERGE))
+		{
+			out->type |= (*lst)->token->type;
+			str_merge_to(&out->input, ft_strdup((*lst)->token->input));
+			if ((*lst)->next && ((*lst)->next->token->type & TOKEN_MERGE))
+				(*lst) = (*lst)->next;
+			else
+				break ;
+		}
+		return (out);
 	}
-	list_clear(root, token_destroy);
-	(*root) = output;
-	return (true);
+	return (token_dup((*lst)->token));
 }
 
-char	*lexer(char *input, t_list *out)
+static void	*token_merge(void *input)
 {
-	char	*error;
+	t_token			out;
+	t_token_list	*lst;
 
-	error = tokenizer(input, out);
-	if (error)
-		return (error);
-	print_colored_token_list("~$ ", *out);
-	token_list_sanitizer(out);
-	print_colored_token_list("~$ ", *out);
-	return (NULL);
+	lst = input;
+	if (lst == NULL || (*lst) == NULL)
+		return (NULL);
+	if ((*lst)->token->type & TOKEN_SPACES)
+		return (NULL);
+	if ((*lst)->token->type & TOKEN_OPERATOR)
+		return (token_dup((*lst)->token));
+	if ((*lst)->token->type & TOKEN_MERGE)
+	{
+		out = token_dup((*lst)->token);
+		if ((*lst)->next && (*lst)->next->token->type & TOKEN_OPERATOR)
+			return (out);
+		(*lst) = (*lst)->next;
+		while ((*lst) && ((*lst)->token->type & TOKEN_MERGE))
+		{
+			out->type |= (*lst)->token->type;
+			str_merge_to(&out->input, ft_strdup((*lst)->token->input));
+			(*lst) = (*lst)->next;
+		}
+		return (out);
+	}
+	return (token_dup((*lst)->token));
+}
+
+t_token_list	lexer(char *input)
+{
+	t_token_list	output;
+	t_token_list	merged;
+	t_token_list	operator;
+
+	output = checker(input);
+	if (output == NULL)
+		return (NULL);
+	operator = list_subset(output, token_merge_operator);
+	list_iter(operator, token_expand_variable, NULL);
+	list_clear(&output, token_destroy);
+	merged = list_subset(operator, token_merge);
+	list_clear(&operator, token_destroy);
+	return (merged);
 }

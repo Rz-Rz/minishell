@@ -6,7 +6,7 @@
 #    By: yboudoui <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/06/19 14:53:15 by yboudoui          #+#    #+#              #
-#    Updated: 2023/02/15 18:39:18 by kdhrif           ###   ########.fr        #
+#    Updated: 2023/03/20 17:58:13 by yboudoui         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,54 +22,112 @@ RM					=	rm -f
 
 SRCS	=\
 ./src/utils/string/is_empty.c\
+./src/utils/string/str_merge_new_line.c\
+./src/utils/string/is_alpha.c\
+./src/utils/string/str_merge_list.c\
+./src/utils/string/str_join_list.c\
+./src/utils/string/str_find_pattern.c\
 ./src/utils/string/ft_strnstr.c\
-./src/utils/string/str_merge.c\
+./src/utils/string/is_alnum.c\
+./src/utils/string/ft_strtrim.c\
+./src/utils/string/string_cmp.c\
+./src/utils/string/str_new_empty.c\
+./src/utils/string/str_merge_list_to.c\
 ./src/utils/string/str_slice_prefix.c\
 ./src/utils/string/ft_strncmp.c\
 ./src/utils/string/ft_strlen.c\
+./src/utils/string/charset.c\
+./src/utils/string/ft_putstr_fd.c\
 ./src/utils/string/ft_substr.c\
 ./src/utils/string/ft_str_find_prefix.c\
+./src/utils/string/ft_strchr.c\
+./src/utils/string/ft_atoi.c\
+./src/utils/string/ft_itoa.c\
+./src/utils/string/ft_putchar_fd.c\
 ./src/utils/string/ft_strjoin.c\
 ./src/utils/string/ft_split.c\
-./src/utils/string/list_to_str_array.c\
+./src/utils/string/string_end_with.c\
 ./src/utils/string/string_array_destroy.c\
+./src/utils/string/ft_strrchr.c\
 ./src/utils/string/ft_strdup.c\
 ./src/utils/string/str_slice_charset.c\
 ./src/utils/string/is_space.c\
 ./src/utils/string/str_slice_section.c\
+./src/utils/string/is_digit.c\
 ./src/utils/list/list_destroy.c\
 ./src/utils/list/list_create.c\
 ./src/utils/list/list_last.c\
 ./src/utils/list/str_array_to_list.c\
+./src/utils/list/list_insert.c\
 ./src/utils/list/ft_lstmap.c\
 ./src/utils/list/list_add.c\
+./src/utils/shlvl.c\
+./src/utils/memory/ft_memcmp.c\
 ./src/utils/memory/ft_memcpy.c\
 ./src/utils/memory/ft_calloc.c\
+./src/utils/memory/sizeof_array.c\
+./src/utils/memory/ft_memset.c\
 ./src/main.c\
 ./src/parser/prompt/prompt.c\
 ./src/parser/lexer/lexer.c\
+./src/parser/lexer/check_syntax.c\
 ./src/parser/lexer/matching.c\
 ./src/parser/lexer/token.c\
-./src/parser/expander/expander.c\
-./src/parser/syntaxer/syntaxer.c\
 ./src/parser/syntaxer/commande.c\
+./src/parser/environment/insert.c\
 ./src/parser/environment/environment.c\
+./src/parser/environment/definition.c\
+./src/parser/environment/env_list_get_value_list.c\
 ./src/parser/environment/environment_list.c\
-./show/lexer_show.c\
+./src/parser/environment/utils.c\
+./src/execution/commande_expansion.c\
+./src/execution/heredoc/heredoc_readline.c\
+./src/execution/heredoc/heredoc.c\
+./src/execution/cmd.c\
+./src/execution/pipex/exec_builtins.c\
+./src/execution/pipex/success.c\
+./src/execution/pipex/execute.c\
+./src/execution/pipex/cmd.c\
+./src/execution/pipex/stat.c\
+./src/execution/pipex/meta_exit.c\
+./src/execution/pipex/get_paths.c\
+./src/execution/pipex/redirection/open.c\
+./src/execution/pipex/redirection/redir.c\
+./src/execution/pipex/pipe.c\
+./src/execution/pipex/parse_env.c\
+./src/execution/pipex/pipex.c\
+./src/execution/pipex/path_null.c\
+./src/execution/pipex/error/dup.c\
+./src/execution/pipex/error/null_str_err.c\
+./src/execution/pipex/error/fork.c\
+./src/execution/pipex/error/error.c\
+./src/execution/pipex/signal.c\
+./src/execution/pipex/get_cmd_path.c\
+./src/execution/pipex/open.c\
+./src/execution/pipex/wait.c\
+./src/execution/pipex/pipeline_status.c\
+./src/execution/pipex/free.c\
+./src/execution/builtin/singleton.c\
+./src/execution/builtin/unset.c\
+./src/execution/builtin/is_builtin.c\
+./src/execution/builtin/exit.c\
+./src/execution/builtin/cd.c\
+./src/execution/builtin/env.c\
+./src/execution/builtin/echo.c\
+./src/execution/builtin/export.c\
+./src/execution/builtin/pwd.c\
 
 INCS	=\
-./show\
-./inc/utils/string\
-./inc/utils/list\
 ./inc/utils\
-./inc/utils/memory\
 ./inc/parser\
 ./inc/parser/prompt/commande\
 ./inc/parser/prompt\
-./inc/parser/lexer\
-./inc/parser/expander\
 ./inc/parser/environment\
-./inc/read_line\
+./inc\
+./inc/execution/heredoc\
+./inc/execution/pipex\
+./inc/execution\
+./inc/execution/builtin\
 
 OBJS				=	$(SRCS:.c=.o)
 
@@ -95,14 +153,13 @@ fclean:		clean
 
 re:			fclean all
 
-fsanitize:	fclean
-			@$(MAKE) all -C . CFLAGS="-Wall -Wextra -Werror -DCOLORED \
-			-fsanitize=address"
+fsanitize:	CFLAGS+= -fsanitize=address -g3
+fsanitize:	re
 
-valgrind:	fclean
-			@$(MAKE) all -C . CFLAGS="-Wall -Wextra -Werror -DCOLORED -g3"
+valgrind:
+			@clear
 			@valgrind														\
-			-s																\
+			-q																\
 			--suppressions=./.readline.supp									\
 			--leak-check=full												\
 			--show-leak-kinds=all											\
@@ -110,5 +167,7 @@ valgrind:	fclean
 			--track-fds=yes													\
 			./$(NAME)														\
 
-#			--gen-suppressions=yes											\
-PHONY:		all clean fclean re bonus
+re_valgrind:	CFLAGS+= -g3
+re_valgrind:	all valgrind
+
+.PHONY:		all clean fclean re
